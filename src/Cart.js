@@ -1,8 +1,90 @@
 import styled from "styled-components";
+import { useCartContext } from "./context/cartContext";
+import CartItem from "./components/CartItem";
+import { NavLink } from "react-router-dom";
+import { Button } from "./styles/Button";
+import FormatPrice from "./Helpers/FormatPrice";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const Cart = () => {
-  return <Wrapper></Wrapper>;
+
+  const { cart, clearCart, total_price, shipping_fee } = useCartContext();
+  const { isAuthenticated, user } = useAuth0();
+
+  return <Wrapper>
+    {cart.length === 0 ? (
+      <EmptyDiv>
+        <h3>No Item In Cart</h3>
+        <NavLink to="/products">
+          <Button> Continue Shopping</Button>
+        </NavLink>
+      </EmptyDiv>
+    ) : (
+      <div className="container">
+        {isAuthenticated && (
+          <div className="cart-user--profile">
+            <img src={user.picture} alt={user.name} />
+            <h2 className="cart-user--name">{user.name}</h2>
+          </div>
+        )}
+        <div className="cart_heading grid grid-five-column">
+          <p>Item</p>
+          <p className="cart_hide">Price</p>
+          <p>Quantity</p>
+          <p className="cart-hide">Subtotal</p>
+          <p>Remove</p>
+        </div>
+        <hr />
+
+        <div className="cart-item">
+          {
+            cart.map((cartItem) => {
+              return <CartItem key={cartItem.id} {...cartItem} />;
+            })}
+        </div>
+        <hr />
+
+        <div className="cart-two-button">
+          <NavLink to="/products">
+            <Button> Continue Shopping</Button>
+          </NavLink>
+          <Button onClick={clearCart} className="btn btn-clear">Clear Cart</Button>
+        </div>
+
+        <div className="order-total--amount">
+          <div className="order-total--subdata">
+            <div>
+              <p>Subtotal:</p>
+              <p><FormatPrice price={total_price} /></p>
+            </div>
+            <div>
+              <p>shipping fee:</p>
+              <p><FormatPrice price={shipping_fee} /></p>
+            </div>
+            <hr />
+            <div>
+              <p>Total:</p>
+              <p><FormatPrice price={total_price + shipping_fee} /></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+  </Wrapper>;
 };
+
+
+const EmptyDiv = styled.div`
+  display: grid;
+  place-items: center;
+
+  h3 {
+    font-size: 4.2rem;
+    text-transform: capitalize;
+    font-weight: 300;
+    margin-bottom: 20px;
+  }
+`;
 
 const Wrapper = styled.section`
   padding: 9rem 0;
